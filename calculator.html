@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<!-- Primary Meta Tags -->
+<title>🇭🇺 Hungary | Seat Calculator</title>
+<meta name="title" content="🇭🇺 Hungary | Seat Calculator">
+<meta name="description" content="">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://nowcast-eu.github.io/Hungary/calculator.html">
+<meta property="og:title" content="🇭🇺 Hungary | Seat Calculator">
+<meta property="og:description" content="">
+<meta property="og:image" content="https://nowcast-eu.github.io/Hungary/thumbnail.png">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:url" content="https://nowcast-eu.github.io/Hungary/calculator.html">
+<meta name="twitter:title" content="🇭🇺 Hungary | Seat Calculator">
+<meta name="twitter:description" content="">
+<meta name="twitter:image" content="https://nowcast-eu.github.io/Hungary/thumbnail.png">
+
+<link rel="icon" type="image/png" href="https://nowcast-eu.github.io/Hungary/HU_favicon.png">
+
+<style>
+  body {
+    font-family: Inter, system-ui, sans-serif;
+    background: #fff;
+    color: #0f172a;
+    margin: 0;
+    padding: 0 24px 24px 24px;
+  }
+
+  /* Narrower padding on mobile */
+  @media (max-width: 768px) {
+    body {
+      padding: 0 8px 24px 8px;
+    }
+  }
+
+  h1 {
+    text-align: center;
+    font-weight: 600;
+    font-size: 1.6rem;
+    margin: 28px 0 12px 0;
+  }
+
+  table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    margin-top: 12px; 
+    table-layout: fixed; 
+  }
+
+  th, td { 
+    padding: 4px 6px; 
+    border: 1px solid #e2e8f0; 
+    text-align: left; 
+    word-wrap: break-word; 
+  }
+
+  th { background: #f1f5f9; font-weight: 600; }
+  td.party-column { font-weight: bold; position: relative; padding-left: 14px; color: black; }
+  td.party-column::before { content: ""; position: absolute; left: 0; top: 0; width: 8px; height: 100%; border-radius: 2px 0 0 2px; background-color: var(--party-color); }
+  td.ge2024-column { font-style: italic; color: #999999; }
+  td.seats-column, td.diff-column { font-weight: bold; text-align: center; }
+  .diff-column.positive { color: #008500; }
+  .diff-column.negative { color: #bb0000; }
+  .diff-column.equal { color: #555555; }
+
+  .input-wrapper { display: flex; align-items: center; justify-content: flex-start; }
+  .input-wrapper input {
+    width: 50px; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px;
+    text-align: left; margin-right: 4px; transition: border-color 0.3s ease;
+  }
+  .percent-sign { font-size: 14px; }
+
+  /* --- BUTTONS --- */
+  .button-container { 
+    display: flex; 
+    gap: 8px; 
+    margin-top: 14px; 
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  button#calculate, button#reset {
+    background: #008500; 
+    color: #fff; 
+    border: none; 
+    border-radius: 6px;
+    padding: 8px 14px; 
+    cursor: pointer; 
+    transition: background 0.3s ease;
+  }
+
+  /* Calculate = 80%, Reset = 20% */
+  button#calculate { flex: 0 0 78%; }
+  button#reset { flex: 0 0 20%; }
+
+  tfoot td { font-weight: bold; text-align: center; background: #f1f5f9; }
+  tfoot td:first-child { text-align: left; padding-left: 14px; }
+
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type=number] { -moz-appearance: textfield; }
+
+  /* Coalition builder */
+  #coalition-builder { margin-top: 48px; }
+  .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  h3 { margin: 0; }
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-bottom: 15px; }
+  .legend-item {
+    display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;
+    border: 1px solid #ccc; border-radius: 8px; padding: 6px 10px; background: #f3f3f3;
+    transition: all 0.25s ease; opacity: 0.6; font-weight: normal;
+  }
+  .legend-item:hover { transform: translateY(-1px); }
+  .legend-item.active { opacity: 1; background: #ffffff; border-color: #999; box-shadow: 0 1px 3px rgba(0,0,0,0.15); font-weight: bold; }
+  .legend-box { width: 20px; height: 20px; border-radius: 4px; }
+  .bar-container { position: relative; height: 117px; background: #f0f0f0; border-radius: 10px; overflow: hidden; margin-bottom: 12px; width: 100%; }
+  .coalition-overlay { position: absolute; top: 0; left: 0; height: 100%; width: 0%; border-top-left-radius: 10px; border-bottom-left-radius: 10px; display: flex; overflow: hidden; transition: width 1s ease; }
+  .segment { height: 100%; flex-shrink: 0; border-radius: 0; }
+  .majority-line {
+    position: absolute; top: 0; bottom: 0; width: 2px;
+    background: repeating-linear-gradient(to bottom,#333,#333 5px,transparent 5px,transparent 10px);
+    left: 50%;
+  }
+  .counter { font-size: 22px; font-weight: bold; text-align: center; margin-bottom: 8px; }
+  .note { font-size: 13px; color: #555; text-align: center; }
+
+  /* --- MOBILE VIEW --- */
+  @media (max-width: 768px) {
+    table, th, td { font-size: 13px; }
+    .counter { font-size: 18px; }
+    h3 { font-size: 16px; }
+    .legend-item { font-size: 12px; padding: 5px 8px; }
+    .input-wrapper input { width: 45px; }
+
+    /* 👇 manually control column widths on mobile */
+    table th:nth-child(1), table td:nth-child(1) { width: 20%; } /* Party */
+    table th:nth-child(2), table td:nth-child(2) { width: 15%; } /* 2023 */
+    table th:nth-child(3), table td:nth-child(3) { width: 25%; } /* Votes */
+    table th:nth-child(4), table td:nth-child(4) { width: 20%; } /* Seats */
+    table th:nth-child(5), table td:nth-child(5) { width: 20%; } /* +/- */
+  }
+
+  @media (max-width: 480px) {
+    table, th, td { font-size: 12px; }
+    .input-wrapper input { width: 40px; }
+  }
+/* --- Uniform table header height + centered header text --- */
+th {
+  height: 30px;           /* 👈 match td height for visual consistency */
+  font-weight: 650;
+  text-align: center;     /* 👈 header text centered only */
+  vertical-align: middle; /* 👈 keep it perfectly aligned vertically */
+}
+
+td {
+  height: 30px;           /* 👈 match th height */
+  vertical-align: middle; /* 👈 ensures text sits evenly across rows */
+}
+/* --- Make the Totals row shorter --- */
+tfoot td {
+  height: 20px;             /* roughly 2/3 of 36px */
+  vertical-align: middle;
+}
+
+
+/* --- Responsive rectangular tab switcher --- */
+/* --- Final rectangular tab switcher --- */
+.tab-switcher {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f4f4f4;
+  border-radius: 12px;
+  padding: 3px;
+  border: 1px solid #d0d0d0;
+  overflow: hidden;
+  width: 140px;             /* base width desktop */
+  max-width: 100%;
+  height: 38px;
+  box-sizing: border-box;
+  -webkit-user-select: none; /* 👈 prevent highlight */
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.tab-btn {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  color: #111;
+  text-align: center;
+  line-height: 1;
+  white-space: nowrap;
+  transition: color 0.25s ease, font-weight 0.25s ease;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent; /* 👈 remove blue tap flash */
+}
+
+.tab-btn.active {
+  font-weight: 700;
+}
+
+.tab-btn:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.tab-pill {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  right: 50%;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 1;
+}
+
+/* --- Mobile scaling + perfect edge alignment --- */
+@media (max-width: 480px) {
+  .tab-switcher {
+    width: 120px;
+    height: 34px;
+    padding: 3px;
+  }
+  .tab-btn {
+    font-size: 13px;
+  }
+  .tab-pill {
+    top: 3px;
+    bottom: 3px;
+    left: 3px;
+    right: 50%;
+  }
+}
+
+</style>
+</head>
+
+<body>
+<h1>Hungary | @Nowcast_EU Interactive Seat Calculator</h1>
+  
+<table>
+  <thead>
+    <tr>
+      <th>Party</th>
+      <th>2022</th>
+      <th>Votes (%)</th>
+      <th>Seats</th>
+      <th>+/- 2022</th>
+    </tr>
+  </thead>
+  <tbody id="tbody"></tbody>
+  <tfoot>
+    <tr>
+      <td>Totals</td>
+      <td></td>
+      <td id="total-votes">0.0%</td>
+      <td id="total-seats">0</td>
+      <td></td>
+    </tr>
+  </tfoot>
+</table>
+
+<div class="button-container">
+  <button id="calculate">Calculate</button>
+  <button id="reset">Reset</button>
+</div>
+
+<div id="coalition-builder">
+<div class="header-container">
+  <h3>Coalition Builder (User Generated)</h3>
+</div>
+
+  <div class="legend" id="legend"></div>
+  <div class="bar-container" id="bar">
+    <div class="coalition-overlay" id="coalition-overlay"></div>
+    <div class="majority-line" title="Majority (100 seats)"></div>
+  </div>
+  <div class="counter" id="counter">0 / 199</div>
+  <div class="note">Majority = 100 seats</div>
+</div>
+
+<script>
+const BASELINE = {"baseline_national": { "FIDESZ": 0.3, "TISZA": 0.4, "MHM": 0.1, "DK": 0.05, "MSZP": 0.05, "MKKP": 0.05 },
+ "constituencies": [{ "name": "BUDAPEST 1", "FIDESZ": 0.25276525, "TISZA": 0.524476744, "MHM": 0.045762712, "DK": 0.070494186, "MSZP": 0.070494186, "MKKP": 0.066666667 },
+    { "name": "BUDAPEST 2", "FIDESZ": 0.241491682, "TISZA": 0.561244186, "MHM": 0.052542373, "DK": 0.075436047, "MSZP": 0.075436047, "MKKP": 0.045454545 },
+    { "name": "BUDAPEST 3", "FIDESZ": 0.248018484, "TISZA": 0.523395349, "MHM": 0.037288136, "DK": 0.070348837, "MSZP": 0.070348837, "MKKP": 0.083333333 },
+    { "name": "BUDAPEST 4", "FIDESZ": 0.240898336, "TISZA": 0.561244186, "MHM": 0.038983051, "DK": 0.075436047, "MSZP": 0.075436047, "MKKP": 0.056060606 },
+    { "name": "BUDAPEST 5", "FIDESZ": 0.224284658, "TISZA": 0.555837209, "MHM": 0.062711864, "DK": 0.074709302, "MSZP": 0.074709302, "MKKP": 0.084848485 },
+    { "name": "BUDAPEST 6", "FIDESZ": 0.248018484, "TISZA": 0.522313953, "MHM": 0.083050847, "DK": 0.070203488, "MSZP": 0.070203488, "MKKP": 0.066666667 },
+    { "name": "BUDAPEST 7", "FIDESZ": 0.180377079, "TISZA": 0.654244186, "MHM": 0.055932203, "DK": 0.087936047, "MSZP": 0.087936047, "MKKP": 0.063636364 },
+    { "name": "BUDAPEST 8", "FIDESZ": 0.216571165, "TISZA": 0.585034884, "MHM": 0.06440678, "DK": 0.078633721, "MSZP": 0.078633721, "MKKP": 0.053030303 },
+    { "name": "BUDAPEST 9", "FIDESZ": 0.25276525, "TISZA": 0.49744186, "MHM": 0.074576271, "DK": 0.066860465, "MSZP": 0.066860465, "MKKP": 0.059090909 },
+    { "name": "BUDAPEST 10", "FIDESZ": 0.243865065, "TISZA": 0.52772093, "MHM": 0.061016949, "DK": 0.070930233, "MSZP": 0.070930233, "MKKP": 0.056060606 },
+    { "name": "BUDAPEST 11", "FIDESZ": 0.231998152, "TISZA": 0.549348837, "MHM": 0.076271186, "DK": 0.073837209, "MSZP": 0.073837209, "MKKP": 0.053030303 },
+    { "name": "BUDAPEST 12", "FIDESZ": 0.251578558, "TISZA": 0.487709302, "MHM": 0.083050847, "DK": 0.065552326, "MSZP": 0.065552326, "MKKP": 0.066666667 },
+    { "name": "BUDAPEST 13", "FIDESZ": 0.264632163, "TISZA": 0.492034884, "MHM": 0.055932203, "DK": 0.066133721, "MSZP": 0.066133721, "MKKP": 0.048484848 },
+    { "name": "BUDAPEST 14", "FIDESZ": 0.265225508, "TISZA": 0.475813953, "MHM": 0.086440678, "DK": 0.063953488, "MSZP": 0.063953488, "MKKP": 0.059090909 },
+    { "name": "BUDAPEST 15", "FIDESZ": 0.256918669, "TISZA": 0.482302326, "MHM": 0.074576271, "DK": 0.064825581, "MSZP": 0.064825581, "MKKP": 0.048484848 },
+    { "name": "BUDAPEST 16", "FIDESZ": 0.250985213, "TISZA": 0.501767442, "MHM": 0.083050847, "DK": 0.06744186, "MSZP": 0.06744186, "MKKP": 0.062121212 },
+    { "name": "BUDAPEST 17", "FIDESZ": 0.247425139, "TISZA": 0.502848837, "MHM": 0.096610169, "DK": 0.067587209, "MSZP": 0.067587209, "MKKP": 0.051515152 },
+    { "name": "BUDAPEST 18", "FIDESZ": 0.249205176, "TISZA": 0.524476744, "MHM": 0.071186441, "DK": 0.070494186, "MSZP": 0.070494186, "MKKP": 0.051515152 },
+    { "name": "BARANYA 1", "FIDESZ": 0.248018484, "TISZA": 0.475813953, "MHM": 0.091525424, "DK": 0.063953488, "MSZP": 0.063953488, "MKKP": 0.062121212 },
+    { "name": "BARANYA 2", "FIDESZ": 0.263445471, "TISZA": 0.445534884, "MHM": 0.093220339, "DK": 0.059883721, "MSZP": 0.059883721, "MKKP": 0.062121212 },
+    { "name": "BARANYA 3", "FIDESZ": 0.358380776, "TISZA": 0.323337209, "MHM": 0.125423729, "DK": 0.043459302, "MSZP": 0.043459302, "MKKP": 0.035 },
+    { "name": "BARANYA 4", "FIDESZ": 0.362534196, "TISZA": 0.310360465, "MHM": 0.091525424, "DK": 0.041715116, "MSZP": 0.041715116, "MKKP": 0.037878788 },
+    { "name": "BÁCS-KISKUN 1", "FIDESZ": 0.350073937, "TISZA": 0.313604651, "MHM": 0.125423729, "DK": 0.042151163, "MSZP": 0.042151163, "MKKP": 0.054545455 },
+    { "name": "BÁCS-KISKUN 2", "FIDESZ": 0.314473198, "TISZA": 0.370918605, "MHM": 0.118644068, "DK": 0.049854651, "MSZP": 0.049854651, "MKKP": 0.068181818 },
+    { "name": "BÁCS-KISKUN 3", "FIDESZ": 0.354227357, "TISZA": 0.326581395, "MHM": 0.105084746, "DK": 0.043895349, "MSZP": 0.043895349, "MKKP": 0.035 },
+    { "name": "BÁCS-KISKUN 4", "FIDESZ": 0.373807763, "TISZA": 0.268186047, "MHM": 0.122033898, "DK": 0.036046512, "MSZP": 0.036046512, "MKKP": 0.048484848 },
+    { "name": "BÁCS-KISKUN 5", "FIDESZ": 0.357194085, "TISZA": 0.308197674, "MHM": 0.166101695, "DK": 0.041424419, "MSZP": 0.041424419, "MKKP": 0.035 },
+    { "name": "BÁCS-KISKUN 6", "FIDESZ": 0.339987061, "TISZA": 0.353616279, "MHM": 0.122033898, "DK": 0.04752907, "MSZP": 0.04752907, "MKKP": 0.03030303 },
+    { "name": "BÉKÉS 1", "FIDESZ": 0.286585952, "TISZA": 0.433639535, "MHM": 0.113559322, "DK": 0.058284884, "MSZP": 0.058284884, "MKKP": 0.036363636 },
+    { "name": "BÉKÉS 2", "FIDESZ": 0.342360444, "TISZA": 0.317930233, "MHM": 0.147457627, "DK": 0.042732558, "MSZP": 0.042732558, "MKKP": 0.037878788 },
+    { "name": "BÉKÉS 3", "FIDESZ": 0.331086876, "TISZA": 0.366593023, "MHM": 0.106779661, "DK": 0.049273256, "MSZP": 0.049273256, "MKKP": 0.028787879 },
+    { "name": "BÉKÉS 4", "FIDESZ": 0.295486137, "TISZA": 0.429313953, "MHM": 0.1, "DK": 0.057703488, "MSZP": 0.057703488, "MKKP": 0.03030303 },
+    { "name": "BORSOD-ABAÚJ-ZEMPLÉN 1", "FIDESZ": 0.27590573, "TISZA": 0.447697674, "MHM": 0.111864407, "DK": 0.060174419, "MSZP": 0.060174419, "MKKP": 0.039393939 },
+    { "name": "BORSOD-ABAÚJ-ZEMPLÉN 2", "FIDESZ": 0.260478743, "TISZA": 0.462837209, "MHM": 0.144067797, "DK": 0.062209302, "MSZP": 0.062209302, "MKKP": 0.040909091 },
+    { "name": "BORSOD-ABAÚJ-ZEMPLÉN 3", "FIDESZ": 0.349480591, "TISZA": 0.29305814, "MHM": 0.1, "DK": 0.039389535, "MSZP": 0.039389535, "MKKP": 0.021212121 },
+    { "name": "BORSOD-ABAÚJ-ZEMPLÉN 4", "FIDESZ": 0.322780037, "TISZA": 0.374162791, "MHM": 0.122033898, "DK": 0.050290698, "MSZP": 0.050290698, "MKKP": 0.028787879 },
+    { "name": "BORSOD-ABAÚJ-ZEMPLÉN 5", "FIDESZ": 0.359567468, "TISZA": 0.324418605, "MHM": 0.098305085, "DK": 0.043604651, "MSZP": 0.043604651, "MKKP": 0.024242424 },
+    { "name": "BORSOD-ABAÚJ-ZEMPLÉN 6", "FIDESZ": 0.350073937, "TISZA": 0.399034884, "MHM": 0.07, "DK": 0.053633721, "MSZP": 0.053633721, "MKKP": 0.035 },
+    { "name": "BORSOD-ABAÚJ-ZEMPLÉN 7", "FIDESZ": 0.358380776, "TISZA": 0.291976744, "MHM": 0.127118644, "DK": 0.039244186, "MSZP": 0.039244186, "MKKP": 0.03030303 },
+    { "name": "CSONGRÁD-CSANÁD 1", "FIDESZ": 0.215977819, "TISZA": 0.535290698, "MHM": 0.096610169, "DK": 0.071947674, "MSZP": 0.071947674, "MKKP": 0.059090909 },
+    { "name": "CSONGRÁD-CSANÁD 2", "FIDESZ": 0.268785582, "TISZA": 0.43472093, "MHM": 0.161016949, "DK": 0.058430233, "MSZP": 0.058430233, "MKKP": 0.045454545 },
+    { "name": "CSONGRÁD-CSANÁD 3", "FIDESZ": 0.324560074, "TISZA": 0.33955814, "MHM": 0.166101695, "DK": 0.045639535, "MSZP": 0.045639535, "MKKP": 0.035 },
+    { "name": "CSONGRÁD-CSANÁD 4", "FIDESZ": 0.30735305, "TISZA": 0.43472093, "MHM": 0.089830508, "DK": 0.058430233, "MSZP": 0.058430233, "MKKP": 0.025757576 },
+    { "name": "FEJÉR 1", "FIDESZ": 0.281245841, "TISZA": 0.452023256, "MHM": 0.086440678, "DK": 0.060755814, "MSZP": 0.060755814, "MKKP": 0.054545455 },
+    { "name": "FEJÉR 2", "FIDESZ": 0.332273567, "TISZA": 0.324418605, "MHM": 0.138983051, "DK": 0.043604651, "MSZP": 0.043604651, "MKKP": 0.056060606 },
+    { "name": "FEJÉR 3", "FIDESZ": 0.339987061, "TISZA": 0.344965116, "MHM": 0.094915254, "DK": 0.046366279, "MSZP": 0.046366279, "MKKP": 0.051515152 },
+    { "name": "FEJÉR 4", "FIDESZ": 0.274125693, "TISZA": 0.473651163, "MHM": 0.084745763, "DK": 0.063662791, "MSZP": 0.063662791, "MKKP": 0.040909091 },
+    { "name": "FEJÉR 5", "FIDESZ": 0.383301294, "TISZA": 0.263860465, "MHM": 0.120338983, "DK": 0.035465116, "MSZP": 0.035465116, "MKKP": 0.034848485 },
+    { "name": "GYŐR-MOSON-SOPRON 1", "FIDESZ": 0.299046211, "TISZA": 0.414174419, "MHM": 0.093220339, "DK": 0.055668605, "MSZP": 0.055668605, "MKKP": 0.053030303 },
+    { "name": "GYŐR-MOSON-SOPRON 2", "FIDESZ": 0.356600739, "TISZA": 0.33955814, "MHM": 0.103389831, "DK": 0.045639535, "MSZP": 0.045639535, "MKKP": 0.035 },
+    { "name": "GYŐR-MOSON-SOPRON 3", "FIDESZ": 0.422462107, "TISZA": 0.2325, "MHM": 0.096610169, "DK": 0.03125, "MSZP": 0.03125, "MKKP": 0.035 },
+    { "name": "GYŐR-MOSON-SOPRON 4", "FIDESZ": 0.340580407, "TISZA": 0.360104651, "MHM": 0.123728814, "DK": 0.048401163, "MSZP": 0.048401163, "MKKP": 0.035 },
+    { "name": "GYŐR-MOSON-SOPRON 5", "FIDESZ": 0.351260628, "TISZA": 0.329825581, "MHM": 0.086440678, "DK": 0.044331395, "MSZP": 0.044331395, "MKKP": 0.045454545 },
+    { "name": "HAJDÚ-BIHAR 1", "FIDESZ": 0.290739372, "TISZA": 0.430395349, "MHM": 0.103389831, "DK": 0.057848837, "MSZP": 0.057848837, "MKKP": 0.053030303 },
+    { "name": "HAJDÚ-BIHAR 2", "FIDESZ": 0.329900185, "TISZA": 0.433639535, "MHM": 0.07, "DK": 0.058284884, "MSZP": 0.058284884, "MKKP": 0.035 },
+    { "name": "HAJDÚ-BIHAR 3", "FIDESZ": 0.376774492, "TISZA": 0.299546512, "MHM": 0.106779661, "DK": 0.040261628, "MSZP": 0.040261628, "MKKP": 0.035 },
+    { "name": "HAJDÚ-BIHAR 4", "FIDESZ": 0.36609427, "TISZA": 0.24872093, "MHM": 0.093220339, "DK": 0.033430233, "MSZP": 0.033430233, "MKKP": 0.035 },
+    { "name": "HAJDÚ-BIHAR 5", "FIDESZ": 0.359567468, "TISZA": 0.328744186, "MHM": 0.120338983, "DK": 0.044186047, "MSZP": 0.044186047, "MKKP": 0.035 },
+    { "name": "HAJDÚ-BIHAR 6", "FIDESZ": 0.345327172, "TISZA": 0.336313953, "MHM": 0.13220339, "DK": 0.045203488, "MSZP": 0.045203488, "MKKP": 0.035 },
+    { "name": "HEVES 1", "FIDESZ": 0.309726433, "TISZA": 0.394709302, "MHM": 0.116949153, "DK": 0.053052326, "MSZP": 0.053052326, "MKKP": 0.037878788 },
+    { "name": "HEVES 2", "FIDESZ": 0.325746765, "TISZA": 0.393627907, "MHM": 0.101694915, "DK": 0.052906977, "MSZP": 0.052906977, "MKKP": 0.035 },
+    { "name": "HEVES 3", "FIDESZ": 0.350667283, "TISZA": 0.320093023, "MHM": 0.154237288, "DK": 0.043023256, "MSZP": 0.043023256, "MKKP": 0.035 },
+    { "name": "JÁSZ-NAGYKUN-SZOLNOK 1", "FIDESZ": 0.278279113, "TISZA": 0.423906977, "MHM": 0.125423729, "DK": 0.056976744, "MSZP": 0.056976744, "MKKP": 0.043939394 },
+    { "name": "JÁSZ-NAGYKUN-SZOLNOK 2", "FIDESZ": 0.354820702, "TISZA": 0.364430233, "MHM": 0.076271186, "DK": 0.048982558, "MSZP": 0.048982558, "MKKP": 0.035 },
+    { "name": "JÁSZ-NAGYKUN-SZOLNOK 3", "FIDESZ": 0.380334566, "TISZA": 0.315767442, "MHM": 0.088135593, "DK": 0.04244186, "MSZP": 0.04244186, "MKKP": 0.035 },
+    { "name": "JÁSZ-NAGYKUN-SZOLNOK 4", "FIDESZ": 0.305573013, "TISZA": 0.401197674, "MHM": 0.138983051, "DK": 0.053924419, "MSZP": 0.053924419, "MKKP": 0.03030303 },
+    { "name": "KOMÁROM-ESZTERGOM 1", "FIDESZ": 0.285992606, "TISZA": 0.445534884, "MHM": 0.088135593, "DK": 0.059883721, "MSZP": 0.059883721, "MKKP": 0.039393939 },
+    { "name": "KOMÁROM-ESZTERGOM 2", "FIDESZ": 0.296672828, "TISZA": 0.419581395, "MHM": 0.093220339, "DK": 0.056395349, "MSZP": 0.056395349, "MKKP": 0.039393939 },
+    { "name": "KOMÁROM-ESZTERGOM 3", "FIDESZ": 0.326933457, "TISZA": 0.35794186, "MHM": 0.111864407, "DK": 0.048110465, "MSZP": 0.048110465, "MKKP": 0.039393939 },
+    { "name": "NÓGRÁD 1", "FIDESZ": 0.319813309, "TISZA": 0.391465116, "MHM": 0.103389831, "DK": 0.052616279, "MSZP": 0.052616279, "MKKP": 0.027272727 },
+    { "name": "NÓGRÁD 2", "FIDESZ": 0.356600739, "TISZA": 0.259534884, "MHM": 0.201694915, "DK": 0.034883721, "MSZP": 0.034883721, "MKKP": 0.031818182 },
+    { "name": "PEST 1", "FIDESZ": 0.269378928, "TISZA": 0.466081395, "MHM": 0.083050847, "DK": 0.062645349, "MSZP": 0.062645349, "MKKP": 0.048484848 },
+    { "name": "PEST 2", "FIDESZ": 0.277685767, "TISZA": 0.485546512, "MHM": 0.061016949, "DK": 0.065261628, "MSZP": 0.065261628, "MKKP": 0.048484848 },
+    { "name": "PEST 3", "FIDESZ": 0.307946396, "TISZA": 0.40444186, "MHM": 0.072881356, "DK": 0.054360465, "MSZP": 0.054360465, "MKKP": 0.065151515 },
+    { "name": "PEST 4", "FIDESZ": 0.329306839, "TISZA": 0.365511628, "MHM": 0.1, "DK": 0.049127907, "MSZP": 0.049127907, "MKKP": 0.048484848 },
+    { "name": "PEST 5", "FIDESZ": 0.274719039, "TISZA": 0.454186047, "MHM": 0.079661017, "DK": 0.061046512, "MSZP": 0.061046512, "MKKP": 0.057575758 },
+    { "name": "PEST 6", "FIDESZ": 0.291332717, "TISZA": 0.413093023, "MHM": 0.098305085, "DK": 0.055523256, "MSZP": 0.055523256, "MKKP": 0.051515152 },
+    { "name": "PEST 7", "FIDESZ": 0.291926063, "TISZA": 0.394709302, "MHM": 0.111864407, "DK": 0.053052326, "MSZP": 0.053052326, "MKKP": 0.068181818 },
+    { "name": "PEST 8", "FIDESZ": 0.270565619, "TISZA": 0.461755814, "MHM": 0.094915254, "DK": 0.062063953, "MSZP": 0.062063953, "MKKP": 0.048484848 },
+    { "name": "PEST 9", "FIDESZ": 0.357194085, "TISZA": 0.310360465, "MHM": 0.111864407, "DK": 0.041715116, "MSZP": 0.041715116, "MKKP": 0.037878788 },
+    { "name": "PEST 10", "FIDESZ": 0.354227357, "TISZA": 0.308197674, "MHM": 0.127118644, "DK": 0.041424419, "MSZP": 0.041424419, "MKKP": 0.045454545 },
+    { "name": "PEST 11", "FIDESZ": 0.337020333, "TISZA": 0.342802326, "MHM": 0.101694915, "DK": 0.046075581, "MSZP": 0.046075581, "MKKP": 0.043939394 },
+    { "name": "PEST 12", "FIDESZ": 0.350667283, "TISZA": 0.310360465, "MHM": 0.130508475, "DK": 0.041715116, "MSZP": 0.041715116, "MKKP": 0.039393939 },
+    { "name": "SOMOGY 1", "FIDESZ": 0.282432532, "TISZA": 0.376325581, "MHM": 0.1, "DK": 0.050581395, "MSZP": 0.050581395, "MKKP": 0.034848485 },
+    { "name": "SOMOGY 2", "FIDESZ": 0.343547135, "TISZA": 0.40227907, "MHM": 0.069491525, "DK": 0.054069767, "MSZP": 0.054069767, "MKKP": 0.035 },
+    { "name": "SOMOGY 3", "FIDESZ": 0.343547135, "TISZA": 0.382813953, "MHM": 0.098305085, "DK": 0.051453488, "MSZP": 0.051453488, "MKKP": 0.035 },
+    { "name": "SOMOGY 4", "FIDESZ": 0.355414048, "TISZA": 0.408767442, "MHM": 0.07, "DK": 0.05494186, "MSZP": 0.05494186, "MKKP": 0.035 },
+    { "name": "SZABOLCS-SZATMÁR-BEREG 1", "FIDESZ": 0.2664122, "TISZA": 0.455267442, "MHM": 0.089830508, "DK": 0.06119186, "MSZP": 0.06119186, "MKKP": 0.031818182 },
+    { "name": "SZABOLCS-SZATMÁR-BEREG 2", "FIDESZ": 0.344733826, "TISZA": 0.353616279, "MHM": 0.106779661, "DK": 0.04752907, "MSZP": 0.04752907, "MKKP": 0.035 },
+    { "name": "SZABOLCS-SZATMÁR-BEREG 3", "FIDESZ": 0.387454713, "TISZA": 0.282244186, "MHM": 0.1, "DK": 0.037936047, "MSZP": 0.037936047, "MKKP": 0.035 },
+    { "name": "SZABOLCS-SZATMÁR-BEREG 4", "FIDESZ": 0.407628466, "TISZA": 0.269267442, "MHM": 0.079661017, "DK": 0.03619186, "MSZP": 0.03619186, "MKKP": 0.035 },
+    { "name": "SZABOLCS-SZATMÁR-BEREG 5", "FIDESZ": 0.384487985, "TISZA": 0.266023256, "MHM": 0.155932203, "DK": 0.035755814, "MSZP": 0.035755814, "MKKP": 0.035 },
+    { "name": "SZABOLCS-SZATMÁR-BEREG 6", "FIDESZ": 0.389828096, "TISZA": 0.286569767, "MHM": 0.084745763, "DK": 0.038517442, "MSZP": 0.038517442, "MKKP": 0.018181818 },
+    { "name": "TOLNA 1", "FIDESZ": 0.329306839, "TISZA": 0.378488372, "MHM": 0.098305085, "DK": 0.050872093, "MSZP": 0.050872093, "MKKP": 0.039393939 },
+    { "name": "TOLNA 2", "FIDESZ": 0.370247689, "TISZA": 0.291976744, "MHM": 0.127118644, "DK": 0.039244186, "MSZP": 0.039244186, "MKKP": 0.035 },
+    { "name": "TOLNA 3", "FIDESZ": 0.373807763, "TISZA": 0.301709302, "MHM": 0.115254237, "DK": 0.040552326, "MSZP": 0.040552326, "MKKP": 0.035 },
+    { "name": "VAS 1", "FIDESZ": 0.296672828, "TISZA": 0.43472093, "MHM": 0.079661017, "DK": 0.058430233, "MSZP": 0.058430233, "MKKP": 0.046969697 },
+    { "name": "VAS 2", "FIDESZ": 0.382114603, "TISZA": 0.281162791, "MHM": 0.1, "DK": 0.037790698, "MSZP": 0.037790698, "MKKP": 0.034848485 },
+    { "name": "VAS 3", "FIDESZ": 0.393981516, "TISZA": 0.289813953, "MHM": 0.094915254, "DK": 0.038953488, "MSZP": 0.038953488, "MKKP": 0.035 },
+    { "name": "VESZPRÉM 1", "FIDESZ": 0.299639556, "TISZA": 0.423906977, "MHM": 0.105084746, "DK": 0.056976744, "MSZP": 0.056976744, "MKKP": 0.043939394 },
+    { "name": "VESZPRÉM 2", "FIDESZ": 0.302606285, "TISZA": 0.394709302, "MHM": 0.115254237, "DK": 0.053052326, "MSZP": 0.053052326, "MKKP": 0.051515152 },
+    { "name": "VESZPRÉM 3", "FIDESZ": 0.300826248, "TISZA": 0.48122093, "MHM": 0.07, "DK": 0.064680233, "MSZP": 0.064680233, "MKKP": 0.036363636 },
+    { "name": "VESZPRÉM 4", "FIDESZ": 0.372027726, "TISZA": 0.314686047, "MHM": 0.096610169, "DK": 0.042296512, "MSZP": 0.042296512, "MKKP": 0.027272727 },
+    { "name": "ZALA 1", "FIDESZ": 0.337020333, "TISZA": 0.335232558, "MHM": 0.105084746, "DK": 0.04505814, "MSZP": 0.04505814, "MKKP": 0.039393939 },
+    { "name": "ZALA 2", "FIDESZ": 0.354820702, "TISZA": 0.3255, "MHM": 0.105084746, "DK": 0.04375, "MSZP": 0.04375, "MKKP": 0.040909091 },
+    { "name": "HUNGARY", "FIDESZ": 0.3, "TISZA": 0.4, "MHM": 0.1, "DK": 0.05, "MSZP": 0.05, "MKKP": 0.05 },
+    { "name": "ZALA 3", "FIDESZ": 0.314473198, "TISZA": 0.405523256, "MHM": 0.093220339, "DK": 0.054505814, "MSZP": 0.054505814, "MKKP": 0.03030303 }]};
+
+const CONSTITUENCY_SEATS = {
+  "BUDAPEST 1": 1,
+  "BUDAPEST 2": 1,
+  "BUDAPEST 3": 1,
+  "BUDAPEST 4": 1,
+  "BUDAPEST 5": 1,
+  "BUDAPEST 6": 1,
+  "BUDAPEST 7": 1,
+  "BUDAPEST 8": 1,
+  "BUDAPEST 9": 1,
+  "BUDAPEST 10": 1,
+  "BUDAPEST 11": 1,
+  "BUDAPEST 12": 1,
+  "BUDAPEST 13": 1,
+  "BUDAPEST 14": 1,
+  "BUDAPEST 15": 1,
+  "BUDAPEST 16": 1,
+  "BUDAPEST 17": 1,
+  "BUDAPEST 18": 1,
+  "BARANYA 1": 1,
+  "BARANYA 2": 1,
+  "BARANYA 3": 1,
+  "BARANYA 4": 1,
+  "BÁCS-KISKUN 1": 1,
+  "BÁCS-KISKUN 2": 1,
+  "BÁCS-KISKUN 3": 1,
+  "BÁCS-KISKUN 4": 1,
+  "BÁCS-KISKUN 5": 1,
+  "BÁCS-KISKUN 6": 1,
+  "BÉKÉS 1": 1,
+  "BÉKÉS 2": 1,
+  "BÉKÉS 3": 1,
+  "BÉKÉS 4": 1,
+  "BORSOD-ABAÚJ-ZEMPLÉN 1": 1,
+  "BORSOD-ABAÚJ-ZEMPLÉN 2": 1,
+  "BORSOD-ABAÚJ-ZEMPLÉN 3": 1,
+  "BORSOD-ABAÚJ-ZEMPLÉN 4": 1,
+  "BORSOD-ABAÚJ-ZEMPLÉN 5": 1,
+  "BORSOD-ABAÚJ-ZEMPLÉN 6": 1,
+  "BORSOD-ABAÚJ-ZEMPLÉN 7": 1,
+  "CSONGRÁD-CSANÁD 1": 1,
+  "CSONGRÁD-CSANÁD 2": 1,
+  "CSONGRÁD-CSANÁD 3": 1,
+  "CSONGRÁD-CSANÁD 4": 1,
+  "FEJÉR 1": 1,
+  "FEJÉR 2": 1,
+  "FEJÉR 3": 1,
+  "FEJÉR 4": 1,
+  "FEJÉR 5": 1,
+  "GYŐR-MOSON-SOPRON 1": 1,
+  "GYŐR-MOSON-SOPRON 2": 1,
+  "GYŐR-MOSON-SOPRON 3": 1,
+  "GYŐR-MOSON-SOPRON 4": 1,
+  "GYŐR-MOSON-SOPRON 5": 1,
+  "HAJDÚ-BIHAR 1": 1,
+  "HAJDÚ-BIHAR 2": 1,
+  "HAJDÚ-BIHAR 3": 1,
+  "HAJDÚ-BIHAR 4": 1,
+  "HAJDÚ-BIHAR 5": 1,
+  "HAJDÚ-BIHAR 6": 1,
+  "HEVES 1": 1,
+  "HEVES 2": 1,
+  "HEVES 3": 1,
+  "JÁSZ-NAGYKUN-SZOLNOK 1": 1,
+  "JÁSZ-NAGYKUN-SZOLNOK 2": 1,
+  "JÁSZ-NAGYKUN-SZOLNOK 3": 1,
+  "JÁSZ-NAGYKUN-SZOLNOK 4": 1,
+  "KOMÁROM-ESZTERGOM 1": 1,
+  "KOMÁROM-ESZTERGOM 2": 1,
+  "KOMÁROM-ESZTERGOM 3": 1,
+  "NÓGRÁD 1": 1,
+  "NÓGRÁD 2": 1,
+  "PEST 1": 1,
+  "PEST 2": 1,
+  "PEST 3": 1,
+  "PEST 4": 1,
+  "PEST 5": 1,
+  "PEST 6": 1,
+  "PEST 7": 1,
+  "PEST 8": 1,
+  "PEST 9": 1,
+  "PEST 10": 1,
+  "PEST 11": 1,
+  "PEST 12": 1,
+  "SOMOGY 1": 1,
+  "SOMOGY 2": 1,
+  "SOMOGY 3": 1,
+  "SOMOGY 4": 1,
+  "SZABOLCS-SZATMÁR-BEREG 1": 1,
+  "SZABOLCS-SZATMÁR-BEREG 2": 1,
+  "SZABOLCS-SZATMÁR-BEREG 3": 1,
+  "SZABOLCS-SZATMÁR-BEREG 4": 1,
+  "SZABOLCS-SZATMÁR-BEREG 5": 1,
+  "SZABOLCS-SZATMÁR-BEREG 6": 1,
+  "TOLNA 1": 1,
+  "TOLNA 2": 1,
+  "TOLNA 3": 1,
+  "VAS 1": 1,
+  "VAS 2": 1,
+  "VAS 3": 1,
+  "VESZPRÉM 1": 1,
+  "VESZPRÉM 2": 1,
+  "VESZPRÉM 3": 1,
+  "VESZPRÉM 4": 1,
+  "ZALA 1": 1,
+  "ZALA 2": 1,
+  "HUNGARY": 93,
+  "ZALA 3": 1
+};
+
+/* ---- Party setup ---- */
+const PARTIES = ["FIDESZ", "TISZA", "MHM", "DK", "MSZP", "MKKP"];
+const PARTY_COLORS = {"FIDESZ":"#FE6A00","TISZA":"#EE4551","MHM":"#00B050","DK":"#0070C0","MSZP":"#990000","MKKP":"#808080"};
+const GE2024 = {"FIDESZ":54.1,"TISZA":0.0,"MHM":5.9,"DK":0.0,"MSZP":0.0,"MKKP":3.3};
+const DEFAULTS = {"FIDESZ":37.4,"TISZA":49.0,"MHM":4.7,"DK":3.7,"MSZP":0.2,"MKKP":3.1};
+const PREV_2023 = {"FIDESZ":135,"TISZA":0,"MHM":6,"DK":15,"MSZP":10,"MKKP":0};
+
+const parties = PARTIES.map(name => ({
+  name,
+  color: PARTY_COLORS[name] || "#999",
+  ge2024: GE2024[name],
+  votes: DEFAULTS[name],
+  final: 0
+}));
+
+/* ---- Render table ---- */
+function renderTable(){
+  const tbody=document.getElementById('tbody');
+  tbody.innerHTML=parties.map((p,i)=>`
+    <tr>
+      <td class="party-column" style="--party-color:${p.color}">${p.name}</td>
+      <td class="ge2024-column">${p.ge2024.toFixed(1)}%</td>
+      <td>
+        <div class="input-wrapper">
+          <input type="number" id="votes-${i}" value="${p.votes.toFixed(1)}" min="0" max="100" step="0.1">
+          <span class="percent-sign">%</span>
+        </div>
+      </td>
+      <td class="seats-column" id="seats-${i}">—</td>
+      <td class="diff-column" id="diff-${i}">—</td>
+    </tr>`).join('');
+
+  const inputs=document.querySelectorAll('.input-wrapper input');
+  inputs.forEach((input,index)=>{
+    let originalValue = input.value;
+
+    input.addEventListener('focus',()=>{
+      originalValue = input.value;
+      input.value='';
+    });
+    input.addEventListener('blur',()=>{
+      if(input.value==='') input.value = originalValue;
+    });
+
+    input.addEventListener('keydown',e=>{
+      if(e.key==='Enter'){e.preventDefault();if(inputs[index+1])inputs[index+1].focus();}
+    });
+    input.addEventListener('input',()=>{
+      updateVoteTotal();
+      document.getElementById('calculate').style.background='#ffa500';
+    });
+  });
+  updateVoteTotal();
+}
+
+function updateVoteTotal(){
+  let sum=0;
+  parties.forEach((p,i)=>{
+    sum+=parseFloat(document.getElementById(`votes-${i}`).value)||0;
+  });
+  document.getElementById('total-votes').textContent=sum.toFixed(1)+'%';
+}
+
+/* ---- Proportional swing ---- */
+function computeConstituencyShares(){
+  const target={};
+  PARTIES.forEach((n,i)=>target[n]=(parseFloat(document.getElementById(`votes-${i}`).value)||0)/100);
+  const base=BASELINE.baseline_national;const eps=1e-9;
+  return BASELINE.constituencies.map(row=>{
+    const out={name:row.name};let sum=0;
+    PARTIES.forEach(p=>{
+      const baseNat=base[p]??0;
+      const targetNat=target[p]??baseNat;
+      const ratio=(baseNat>eps)?(targetNat/baseNat):(targetNat>0?(targetNat/eps):0);
+      const val=(row[p]??0)*ratio;
+      out[p]=val;sum+=val;
+    });
+    if(sum>0)PARTIES.forEach(p=>out[p]=out[p]/sum);
+    return out;
+  });
+}
+
+/* ---- D’Hondt ---- */
+function dhondtSeats(votes,seats=6,nationalVotes,validParties){
+  const alloc=Object.fromEntries(validParties.map(p=>[p,0]));
+  for(let s=0;s<seats;s++){
+    const quotients=validParties.map(p=>({p,q:(votes[p]||0)/(alloc[p]+1)}));
+    let best=quotients[0];
+    for(let i=1;i<quotients.length;i++){
+      const x=quotients[i];
+      if(x.q>best.q||(Math.abs(x.q-best.q)<1e-12&&(nationalVotes[x.p]||0)>(nationalVotes[best.p]||0)))best=x;
+    }
+    alloc[best.p]+=1;
+  }
+  return alloc;
+}
+
+/* ---- Calculate ---- */
+function calculate(){
+  const nationalVotes={};
+  parties.forEach((p,i)=>{
+    p.votes=parseFloat(document.getElementById(`votes-${i}`).value)||0;
+    nationalVotes[p.name]=p.votes;
+  });
+
+  // --- 5% threshold ---
+  const validParties=PARTIES.filter(p=>nationalVotes[p]>=5);
+  const excluded=PARTIES.filter(p=>nationalVotes[p]<5);
+
+  const perConst=computeConstituencyShares();
+  const totals=Object.fromEntries(PARTIES.map(p=>[p,0]));
+
+  perConst.forEach(row=>{
+    const s=dhondtSeats(row,CONSTITUENCY_SEATS[row.name]||6,nationalVotes,validParties);
+    PARTIES.forEach(p=>totals[p]+=(s[p]||0));
+  });
+
+  excluded.forEach(p=>totals[p]=0);
+
+  PARTIES.forEach((n,i)=>{
+    const seats=totals[n];
+    document.getElementById(`seats-${i}`).textContent=seats;
+    parties[i].final=seats;
+
+    const diff=seats-(PREV_2023[n]||0);
+    const diffCell=document.getElementById(`diff-${i}`);
+    if(diff>0){diffCell.textContent=`+${diff}`;diffCell.className='diff-column positive';}
+    else if(diff<0){diffCell.textContent=`${diff}`;diffCell.className='diff-column negative';}
+    else{diffCell.textContent='(=)';diffCell.className='diff-column equal';}
+  });
+
+  document.getElementById('total-seats').textContent=Object.values(totals).reduce((a,b)=>a+b,0);
+  document.getElementById('calculate').style.background='#008500';
+  updateCoalitionFromTotals(totals);
+}
+
+/* ---- Reset ---- */
+document.getElementById('reset').addEventListener('click',()=>{
+  parties.forEach((p,i)=>document.getElementById(`votes-${i}`).value=DEFAULTS[p.name].toFixed(1));
+  calculate();
+});
+document.getElementById('calculate').addEventListener('click',calculate);
+renderTable();
+document.addEventListener('DOMContentLoaded',()=>calculate());
+
+/* ---- Coalition Builder ---- */
+const COAL_TOTAL=199,COAL_MAJ=100;
+let selected=[];
+const legend=document.getElementById("legend"),overlay=document.getElementById("coalition-overlay"),counter=document.getElementById("counter");
+
+function toggleParty(n){
+  if(selected.includes(n))selected=selected.filter(x=>x!==n);
+  else selected.push(n);
+  renderCoalition(lastTotalsCache);
+}
+
+let lastTotalsCache=null;
+function updateCoalitionFromTotals(t){lastTotalsCache=t;renderCoalition(t);}
+
+function renderCoalition(t){
+  if(!t)return;
+  overlay.innerHTML="";legend.innerHTML="";
+  PARTIES.forEach(n=>{
+    const s=t[n]||0;
+    const item=document.createElement('div');
+    item.className='legend-item'+(selected.includes(n)?' active':'');
+    item.innerHTML=`<div class="legend-box" style="background:${PARTY_COLORS[n]||'#999'}"></div> <strong>${n}</strong> ${s}`;
+    item.onclick=()=>toggleParty(n);
+    legend.appendChild(item);
+  });
+
+  const totalSel=selected.reduce((s,n)=>s+(t[n]||0),0);
+  const width=(totalSel/COAL_TOTAL)*100;
+  overlay.style.width="0%";
+  overlay.innerHTML="";
+  if(totalSel>0){
+    selected.forEach(n=>{
+      const s=t[n]||0;
+      const seg=document.createElement('div');
+      seg.className='segment';
+      seg.style.flexBasis=((s/totalSel)*100)+'%';
+      seg.style.background=PARTY_COLORS[n]||"#999";
+      overlay.appendChild(seg);
+    });
+  }
+  requestAnimationFrame(()=>overlay.style.width=width+"%");
+  counter.textContent=`${totalSel} / ${COAL_TOTAL}`;
+  counter.style.color=totalSel>=COAL_MAJ?"#2BA84A":"#000";
+  document.querySelectorAll(".legend-item").forEach(el=>{
+    const n=el.querySelector("strong").textContent;
+    el.classList.toggle("active",selected.includes(n));
+  });
+}
+/* ---- Tab Switching (fixed state handling) ---- */
+const tabResult = document.getElementById("tab-result");
+const tab2023 = document.getElementById("tab-2023");
+let is2023View = false;
+let lastUserTotals = null; // store the most recent calculated result
+
+// --- patch: remember user totals whenever calculator runs ---
+const originalUpdateCoalitionFromTotals = updateCoalitionFromTotals;
+updateCoalitionFromTotals = function(t) {
+  if (!is2023View) lastUserTotals = t; // only store when user-generated
+  originalUpdateCoalitionFromTotals(t);
+};
+
+tabResult.addEventListener("click", () => {
+  if (!tabResult.classList.contains("active")) {
+    tabResult.classList.add("active");
+    tab2023.classList.remove("active");
+    is2023View = false;
+    document.getElementById("tab-pill").style.transform = "translateX(0%)";
+    updateCoalitionFromTotals(lastUserTotals || lastTotalsCache);
+  }
+});
+
+tab2023.addEventListener("click", () => {
+  if (!tab2023.classList.contains("active")) {
+    tab2023.classList.add("active");
+    tabResult.classList.remove("active");
+    is2023View = true;
+    document.getElementById("tab-pill").style.transform = "translateX(100%)";
+    originalUpdateCoalitionFromTotals(PREV_2023);
+  }
+});
+
+
+
+</script>
+</body>
+</html>
